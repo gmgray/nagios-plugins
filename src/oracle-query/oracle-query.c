@@ -4,42 +4,24 @@
 //#include <string.h>
 #include <unistd.h>
 #include <getopt.h>
-
-char *PROGRAM_VERSION = "1.0";
-char *PROGRAM_NAME = "oraQuery";
-
-void print_help() {
-    printf("Nagios plugin %s ver. %s \n", PROGRAM_NAME,PROGRAM_VERSION);    
-    printf("Usage: \n");
-    printf(""
-    "   -w <int>          warning level\n"
-    "   -c <int>          critical level\n"
-    "   -u <user>         database user\n"
-    "   -p <password>     database password\n"
-    "   -H <hostname>     database hostname\n"
-    "   -P <1521>         database port (default 1521 if not set)\n"
-    "   -s <sid>          database SID\n"
-    "   -q \"query text\"   SQL query to be executed\n"
-    "   -h                show this help text\n"
-    "   -v                verbose output, with parameters summary.\n"
-    );
-}
+#include "oracle-query.h"
 
 int main (int argc, char **argv)
 {
     /* command line parameters initialized here. */
-    /* this could be probably defined as struct, but well... */
-    char *param_warning     = NULL;
-    char *param_critical    = NULL;
-    char *param_user        = NULL;
-    char *param_password    = NULL;
-    char *param_host        = NULL;
-    char *param_sid         = NULL;
-    int param_port          = 1521;
-    char *param_query       = NULL;
-    int param_help          = 0;
-    int param_verbose       = 0;
-    // char *param_help        = NULL; //
+    
+    cli_params params = {     
+        .warning     = NULL,
+        .critical    = NULL,
+        .user        = NULL,
+        .password    = NULL,
+        .host        = NULL,
+        .sid         = NULL,
+        .port          = 1521,
+        .query       = NULL,
+        .help          = 0,
+        .verbose       = 0};
+    
     /* end of command line parameters */
     int c;
     // int index;
@@ -54,40 +36,48 @@ int main (int argc, char **argv)
         switch (c) 
         {
             case 'w':
-                param_warning = optarg;
+                params.warning = optarg;
                 break;
             case 'c':
-                param_critical = optarg;
+                params.critical = optarg;
                 break;
             case 'u':
-                param_user = optarg;
+                params.user = optarg;
                 break;
             case 'p':
-                param_password = optarg;
+                params.password = optarg;
                 break;
             case 'H':
-                param_host = optarg;
+                params.host = optarg;
                 break;
             case 'h':
                 print_help();
-                param_help = 1;
+                params.help = 1;
                 break;
             case 'v':
-                param_verbose = 1;
+                params.verbose = 1;
                 break;
             case 's':
-                param_sid = optarg;
+                params.sid = optarg;
                 break;
             case 'P':
                 //if (strlen(optarg) > 0)
-                    param_port = atoi(optarg);               
+                    params.port = atoi(optarg);               
                 break;
             case 'q':
-                param_query = optarg;
+                params.query = optarg;
                 break;
             case '?':
                 // check if all required options are passed with parameters
-                if (optopt == 'c' || optopt =='w' || optopt =='H' || optopt == 'u' || optopt == 'p' || optopt == 'P')
+                if (
+                        optopt =='c' || 
+                        optopt =='w' || 
+                        optopt =='H' || 
+                        optopt =='u' || 
+                        optopt =='p' || 
+                        optopt =='P' ||
+                        optopt =='s'
+                    )
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);                
                 else if (isprint (optopt))
                     fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -101,28 +91,24 @@ int main (int argc, char **argv)
         }
 
         
-    if (param_verbose == 1) {
+    if (params.verbose == 1) {
         printf ("Verbose switch enabled.\n");
         printf ("Values used: \n");
-        printf (" warning:  %s\n", param_warning);
-        printf (" critical: %s\n", param_critical);
-        printf (" host:     %s\n", param_host);
-        printf (" sid:      %s\n", param_sid);
-        printf (" port:     %d\n", param_port);
-        printf (" username: %s\n", param_user);
-        printf (" password: %s\n", param_password);
-        printf (" query:    %s\n", param_query);
+        printf (" warning:  %s\n", params.warning);
+        printf (" critical: %s\n", params.critical);
+        printf (" host:     %s\n", params.host);
+        printf (" sid:      %s\n", params.sid);
+        printf (" port:     %d\n", params.port);
+        printf (" username: %s\n", params.user);
+        printf (" password: %s\n", params.password);
+        printf (" query:    %s\n", params.query);
         printf (" verbose output enabled\n");
-        if (param_help == 1) 
+        if (params.help == 1) 
             printf (" help text enabled\n");
         else
             printf (" help text disabled\n");
     }
     
-
-    // for (index = optind; index < argc; index++)
-    //     printf ("Non-option argument %s\n", argv[index]);
-
     return 0;
 
 }
